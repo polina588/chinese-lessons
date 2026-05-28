@@ -85,7 +85,6 @@
             transition: 0.2s;
         }
 
-        /* Pаздел для пазла (уровень 1) */
         .cards-grid {
             display: flex;
             flex-wrap: wrap;
@@ -141,7 +140,6 @@
             display: none;
         }
 
-        /* Сопоставление (уровень 2) */
         .matching-board {
             display: flex;
             flex-wrap: wrap;
@@ -245,8 +243,8 @@
     </div>
 
     <div class="stats">
-        <div class="score-box" id="statsLeft">✅ Собрано: <span id="progressCount">0</span> / <span id="totalCount">0</span></div>
-        <div class="score-box" id="statsRight">🎯 Осталось: <span id="remainingCount">0</span></div>
+        <div class="score-box">✅ Собрано: <span id="progressCount">0</span> / <span id="totalCount">0</span></div>
+        <div class="score-box">🎯 Осталось: <span id="remainingCount">0</span></div>
     </div>
 
     <div id="messageArea" class="message-area">🔍 Начинаем уровень 1: собери пазл</div>
@@ -260,6 +258,7 @@
 
 <script>
     // ---------- УРОВЕНЬ 1: Семья и местоимения (11 слов) ----------
+    // Важно: у "他" и "她" ОДИНАКОВЫЙ пиньинь "tā"
     const level1Words = [
         { hanzi: "我", pinyin: "wǒ", translation: "я" },
         { hanzi: "爸爸", pinyin: "bàba", translation: "папа" },
@@ -303,7 +302,6 @@
     let selectedLeftId = null;
     let matchedWords2 = new Array(level2Words.length).fill(false);
 
-    // DOM элементы
     const gameContent = document.getElementById('gameContent');
     const levelTitle = document.getElementById('levelTitle');
     const levelBadge = document.getElementById('levelBadge');
@@ -314,7 +312,6 @@
     const nextLevelBtn = document.getElementById('nextLevelBtn');
     const resetAllBtn = document.getElementById('resetAllBtn');
 
-    // ========== УРОВЕНЬ 1: ПАЗЛ ==========
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -323,14 +320,34 @@
         return arr;
     }
 
+    // ========== УРОВЕНЬ 1: ПАЗЛ ==========
+    // Важное изменение: создаём карточки пиньиня, но при проверке
+    // для слов "他" и "她" разрешаем использовать любой пиньинь "tā"
     function buildDeckLevel1() {
         const deck = [];
         level1Words.forEach((word, idx) => {
-            deck.push({ id: Math.random(), wordId: idx, type: 'hanzi', value: word.hanzi, matched: false });
-            deck.push({ id: Math.random(), wordId: idx, type: 'pinyin', value: word.pinyin, matched: false });
+            deck.push({ id: Math.random(), wordId: idx, type: 'hanzi', value: word.hanzi, matched: false, pinyin: word.pinyin });
+            deck.push({ id: Math.random(), wordId: idx, type: 'pinyin', value: word.pinyin, matched: false, pinyin: word.pinyin });
             deck.push({ id: Math.random(), wordId: idx, type: 'translation', value: word.translation, matched: false });
         });
         return shuffleArray(deck);
+    }
+
+    // Проверка: подходит ли пиньинь к выбранному иероглифу?
+    function isPinyinMatching(hanziCard, pinyinCard) {
+        const hanziWord = level1Words[hanziCard.wordId];
+        const pinyinWord = level1Words[pinyinCard.wordId];
+        
+        // Если это слова "他" или "她" — разрешаем любой пиньинь "tā"
+        const isTaHanzi = (hanziWord.hanzi === "他" || hanziWord.hanzi === "她");
+        const isTaPinyin = (pinyinWord.pinyin === "tā");
+        
+        if (isTaHanzi && isTaPinyin) {
+            return true; // он/она и любой tā подходят
+        }
+        
+        // Для всех остальных слов — строгое совпадение wordId
+        return hanziCard.wordId === pinyinCard.wordId;
     }
 
     function updateStatsLevel1() {
@@ -370,11 +387,6 @@
         renderLevel1();
     }
 
-    function tryMatch(c1, c2, c3) {
-        if (c1.wordId !== c2.wordId || c1.wordId !== c3.wordId) return false;
-        return (c1.type === 'hanzi' && c2.type === 'pinyin' && c3.type === 'translation');
-    }
-
     function onCardClick(card) {
         if (card.matched) return;
         if (matchedWords1.every(v => v === true)) return;
@@ -389,7 +401,14 @@
         }
         else if (currentStep === 1) {
             if (card.type !== 'pinyin') { setMessageLevel1(`❌ Нужен ПИНЬИНЬ для "${selectedCards[0].value}"`, true); resetSelectionLevel1(); return; }
-            if (card.wordId !== selectedCards[0].wordId) { setMessageLevel1(`❌ Неправильный пиньинь`, true); resetSelectionLevel1(); return; }
+            
+            // ИСПРАВЛЕНИЕ ЗДЕСЬ: используем isPinyinMatching
+            if (!isPinyinMatching(selectedCards[0], card)) {
+                setMessageLevel1(`❌ Неправильный пиньинь для "${selectedCards[0].value}"`, true); 
+                resetSelectionLevel1(); 
+                return;
+            }
+            
             selectedCards.push(card);
             currentStep = 2;
             setMessageLevel1(`✅ Пиньинь: ${card.value}. Теперь выбери ПЕРЕВОД.`);
@@ -399,8 +418,14 @@
             if (card.type !== 'translation') { setMessageLevel1(`❌ Нужен ПЕРЕВОД`, true); resetSelectionLevel1(); return; }
             if (card.wordId !== selectedCards[0].wordId) { setMessageLevel1(`❌ Неправильный перевод`, true); resetSelectionLevel1(); return; }
             selectedCards.push(card);
-            if (tryMatch(selectedCards[0], selectedCards[1], selectedCards[2])) {
-                const wid = selectedCards[0].wordId;
+            
+            // Собираем тройку
+            const hanziCard = selectedCards[0];
+            const pinyinCard = selectedCards[1];
+            const transCard = selectedCards[2];
+            
+            if (hanziCard.wordId === transCard.wordId && isPinyinMatching(hanziCard, pinyinCard)) {
+                const wid = hanziCard.wordId;
                 if (!matchedWords1[wid]) {
                     matchedWords1[wid] = true;
                     cards.forEach(c => { if (c.wordId === wid) c.matched = true; });
@@ -571,7 +596,6 @@
         });
     }
 
-    // ========== ПЕРЕКЛЮЧЕНИЕ УРОВНЕЙ ==========
     function switchToLevel2() {
         if (!level1Complete) {
             messageDiv.innerHTML = "⚠️ Сначала заверши уровень 1!";
@@ -597,7 +621,6 @@
     nextLevelBtn.addEventListener('click', switchToLevel2);
     resetAllBtn.addEventListener('click', resetWholeGame);
 
-    // СТАРТ
     initLevel1();
 </script>
 </body>
