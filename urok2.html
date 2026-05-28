@@ -259,8 +259,7 @@
 </div>
 
 <script>
-    // ---------- СЛОВА ----------
-    // Уровень 1: Семья и местоимения (11 слов)
+    // ---------- УРОВЕНЬ 1: Семья и местоимения (11 слов) ----------
     const level1Words = [
         { hanzi: "我", pinyin: "wǒ", translation: "я" },
         { hanzi: "爸爸", pinyin: "bàba", translation: "папа" },
@@ -275,20 +274,20 @@
         { hanzi: "妹妹", pinyin: "mèimei", translation: "младшая сестра" }
     ];
 
-    // Уровень 2: Состояния, частицы, наречия (9 слов)
+    // ---------- УРОВЕНЬ 2: Состояния, частицы, наречия (9 слов) ----------
     const level2Words = [
         { hanzi: "吗", pinyin: "ma", translation: "вопросительная частица" },
         { hanzi: "很", pinyin: "hěn", translation: "очень" },
-        { hanzi: "呢", pinyin: "ne", translation: "частица в вопросах" },
+        { hanzi: "呢", pinyin: "ne", translation: "частица переспроса" },
         { hanzi: "也", pinyin: "yě", translation: "тоже" },
         { hanzi: "都", pinyin: "dōu", translation: "все; оба" },
         { hanzi: "忙", pinyin: "máng", translation: "занятый" },
         { hanzi: "累", pinyin: "lèi", translation: "уставший" },
         { hanzi: "饿", pinyin: "è", translation: "голодный" },
-        { hanzi: "渴", pinyin: "kě", translation: "хотеть пить" }
+        { hanzi: "渴", pinyin: "kě", translation: "испытывающий жажду" }
     ];
 
-    let currentLevel = 1;        // 1 или 2
+    let currentLevel = 1;
     let level1Complete = false;
     let level2Complete = false;
 
@@ -408,9 +407,6 @@
                     updateStatsLevel1();
                     setMessageLevel1(`🎉 Слово собрано! Осталось ${level1Words.length - matchedWords1.filter(m=>m).length} слов.`);
                     resetSelectionLevel1();
-                    if (matchedWords1.every(v => v === true)) {
-                        setMessageLevel1("🏆 Уровень 1 пройден! Нажмите кнопку внизу.");
-                    }
                 } else {
                     setMessageLevel1(`⚠️ Уже собрано`, true);
                     resetSelectionLevel1();
@@ -450,16 +446,13 @@
 
     // ========== УРОВЕНЬ 2: СОПОСТАВЛЕНИЕ ==========
     function initLevel2() {
-        // левая колонка: иероглифы (перемешать)
         leftItems = level2Words.map((word, idx) => ({ id: idx, hanzi: word.hanzi, matched: false }));
         leftItems = shuffleArray([...leftItems]);
-        // правая колонка: переводы (перемешать)
         rightItems = level2Words.map((word, idx) => ({ id: idx, translation: word.translation, matched: false }));
         rightItems = shuffleArray([...rightItems]);
         matchedWords2.fill(false);
         selectedLeftId = null;
         level2Complete = false;
-
         updateStatsLevel2();
         setMessageLevel2("🔍 Выбери иероглиф, затем перевод");
         renderLevel2();
@@ -533,9 +526,6 @@
                 setMessageLevel2(`🎉 Правильно! ${leftItem.hanzi} → ${correctTranslation}`);
                 selectedLeftId = null;
                 renderLevel2();
-                if (matchedWords2.every(v => v === true)) {
-                    setMessageLevel2("🏆 Уровень 2 пройден! Урок 2 завершён! 🏆");
-                }
             } else {
                 setMessageLevel2(`⚠️ Это слово уже сопоставлено`, true);
                 selectedLeftId = null;
