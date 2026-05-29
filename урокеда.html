@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Соедини картинку и иероглиф</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:30px;
+    max-width:1200px;
+    margin:auto;
+}
+
+.column{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.image-card{
+    background:white;
+    border:3px solid transparent;
+    border-radius:12px;
+    padding:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.image-card:hover{
+    transform:scale(1.02);
+}
+
+.image-card.selected{
+    border-color:#3498db;
+}
+
+.image-card.correct{
+    border-color:#2ecc71;
+}
+
+.image-card img{
+    width:100%;
+    max-height:120px;
+    object-fit:contain;
+}
+
+.hanzi-card{
+    background:white;
+    border:3px solid transparent;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    font-size:32px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.hanzi-card:hover{
+    transform:scale(1.02);
+}
+
+.hanzi-card.selected{
+    border-color:#3498db;
+}
+
+.hanzi-card.correct{
+    border-color:#2ecc71;
+}
+
+.popup{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.popup-content{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
+    max-width:400px;
+}
+
+.popup-content img{
+    width:220px;
+    height:220px;
+    object-fit:contain;
+}
+
+.popup-content h2{
+    font-size:40px;
+    margin:10px 0;
+}
+
+.popup-content p{
+    font-size:24px;
+    margin:6px;
+}
+
+button{
+    margin-top:15px;
+    padding:10px 25px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+#result{
+    text-align:center;
+    margin-top:25px;
+    font-size:28px;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Соедини картинку и иероглиф</h1>
+
+<div class="container">
+    <div class="column" id="images"></div>
+    <div class="column" id="hanzi"></div>
+</div>
+
+<div id="result"></div>
+
+<div class="popup" id="popup">
+    <div class="popup-content">
+        <img id="popupImg">
+        <h2 id="popupHanzi"></h2>
+        <p id="popupPinyin"></p>
+        <p id="popupTranslation"></p>
+        <button onclick="closePopup()">Продолжить</button>
+    </div>
+</div>
+
+<script>
+
+const words = [
+
+{hanzi:"吃",pinyin:"chī",translation:"есть",image:"images/есть.png"},
+{hanzi:"饺子",pinyin:"jiǎozi",translation:"дзяодзы (китайские пельмени)",image:"images/дзяодзы.png"},
+{hanzi:"米饭",pinyin:"mǐfàn",translation:"рис",image:"images/рис.png"},
+{hanzi:"面条",pinyin:"miàntiáo",translation:"лапша",image:"images/лапша.png"},
+{hanzi:"面包",pinyin:"miànbāo",translation:"хлеб",image:"images/хлеб.png"},
+{hanzi:"包子",pinyin:"bāozi",translation:"баодзы (китайские паровые булочки с начинкой)",image:"images/баодзы.png"},
+{hanzi:"喝",pinyin:"hē",translation:"пить",image:"images/пить.png"},
+{hanzi:"啤酒",pinyin:"píjiǔ",translation:"пиво",image:"images/пиво.png"},
+{hanzi:"茶",pinyin:"chá",translation:"чай",image:"images/чай.png"},
+{hanzi:"咖啡",pinyin:"kāfēi",translation:"кофе",image:"images/кофе.png"},
+{hanzi:"水",pinyin:"shuǐ",translation:"вода",image:"images/воды.png"},
+{hanzi:"牛奶",pinyin:"niúnǎi",translation:"молоко",image:"images/молоко.png"},
+{hanzi:"买",pinyin:"mǎi",translation:"покупать",image:"images/покупать.png"},
+{hanzi:"词典",pinyin:"cídiǎn",translation:"словарь",image:"images/словарь.png"},
+{hanzi:"本子",pinyin:"běnzi",translation:"тетрадь",image:"images/тетрадь.png"},
+{hanzi:"书",pinyin:"shū",translation:"книга",image:"images/книга.png"},
+{hanzi:"笔",pinyin:"bǐ",translation:"ручка",image:"images/ручка.png"},
+{hanzi:"书包",pinyin:"shūbāo",translation:"рюкзак",image:"images/рюкзак.png"}
+
+];
+
+let selectedImage=null;
+let correctCount=0;
+
+function shuffle(array){
+    return [...array].sort(()=>Math.random()-0.5);
+}
+
+const imageContainer=document.getElementById("images");
+const hanziContainer=document.getElementById("hanzi");
+
+const shuffledImages=shuffle(words);
+const shuffledHanzi=shuffle(words);
+
+shuffledImages.forEach(word=>{
+
+    const div=document.createElement("div");
+    div.className="image-card";
+    div.dataset.hanzi=word.hanzi;
+
+    div.innerHTML=`<img src="${word.image}">`;
+
+    div.onclick=()=>{
+
+        if(div.classList.contains("correct")) return;
+
+        document.querySelectorAll(".image-card")
+        .forEach(x=>x.classList.remove("selected"));
+
+        div.classList.add("selected");
+        selectedImage=div;
+    };
+
+    imageContainer.appendChild(div);
+});
+
+shuffledHanzi.forEach(word=>{
+
+    const div=document.createElement("div");
+    div.className="hanzi-card";
+    div.dataset.hanzi=word.hanzi;
+    div.innerText=word.hanzi;
+
+    div.onclick=()=>{
+
+        if(!selectedImage) return;
+        if(div.classList.contains("correct")) return;
+
+        const imageHanzi=selectedImage.dataset.hanzi;
+        const hanzi=div.dataset.hanzi;
+
+        if(imageHanzi===hanzi){
+
+            selectedImage.classList.add("correct");
+            div.classList.add("correct");
+
+            selectedImage.classList.remove("selected");
+
+            correctCount++;
+
+            const current=words.find(w=>w.hanzi===hanzi);
+
+            showPopup(current);
+
+            if(correctCount===words.length){
+
+                document.getElementById("result").innerHTML=
+                "🎉 Отлично! Все слова выполнены!";
+            }
+
+        }else{
+
+            selectedImage.style.borderColor="red";
+            div.style.borderColor="red";
+
+            setTimeout(()=>{
+                selectedImage.style.borderColor="";
+                div.style.borderColor="";
+            },500);
+        }
+
+        selectedImage=null;
+    };
+
+    hanziContainer.appendChild(div);
+});
+
+function showPopup(word){
+
+    document.getElementById("popupImg").src=word.image;
+    document.getElementById("popupHanzi").innerText=word.hanzi;
+    document.getElementById("popupPinyin").innerText=word.pinyin;
+    document.getElementById("popupTranslation").innerText=word.translation;
+
+    document.getElementById("popup").style.display="flex";
+}
+
+function closePopup(){
+    document.getElementById("popup").style.display="none";
+}
+
+</script>
+
+</body>
+</html>
