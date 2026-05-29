@@ -3,91 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Счётные слова</title>
+<title>量词练习</title>
 <style>
-body{
-font-family:Arial,sans-serif;
-background:#f4f6f9;
-margin:0;
-padding:20px;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-}
-
-.card{
-background:white;
-border-radius:20px;
-padding:30px;
-box-shadow:0 4px 15px rgba(0,0,0,.08);
-text-align:center;
-}
-
-h1{
-margin-top:0;
-}
-
-.progress{
-height:16px;
-background:#ddd;
-border-radius:20px;
-overflow:hidden;
-margin-bottom:20px;
-}
-
-.progress-bar{
-height:100%;
-width:0%;
-background:#4caf50;
-transition:.3s;
-}
-
-.question{
-font-size:48px;
-margin:30px 0;
-font-weight:bold;
-}
-
-.options{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
-}
-
-.option{
-padding:18px;
-font-size:32px;
-border:none;
-border-radius:12px;
-cursor:pointer;
-background:#eef2ff;
-}
-
-.option:hover{
-transform:scale(1.03);
-}
-
-.feedback{
-margin-top:25px;
-font-size:24px;
-min-height:120px;
-}
-
-.next{
-display:none;
-margin-top:20px;
-padding:12px 24px;
-font-size:20px;
-cursor:pointer;
-}
-
-.score{
-font-size:28px;
-font-weight:bold;
-}
-
+body{font-family:Arial,sans-serif;background:#f4f6f9;padding:20px}
+.container{max-width:900px;margin:auto}
+.card{background:white;border-radius:20px;padding:30px;box-shadow:0 4px 15px rgba(0,0,0,.08);text-align:center}
+.progress{height:14px;background:#ddd;border-radius:20px;overflow:hidden;margin-bottom:20px}
+.bar{height:100%;width:0;background:#4caf50}
+.question{font-size:48px;font-weight:bold;margin:25px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.option{padding:18px;font-size:30px;border:none;border-radius:12px;cursor:pointer;background:#eef2ff}
+.option.selected{background:#cfd8ff}
+.feedback{margin-top:20px;font-size:21px;line-height:1.6}
+.next,.check{margin-top:20px;padding:10px 20px;font-size:18px;cursor:pointer}
+.next{display:none}
+.note{color:#666;margin-bottom:10px}
 @media(max-width:768px){
 .question{font-size:34px}
 .option{font-size:24px}
@@ -95,110 +25,111 @@ font-weight:bold;
 </style>
 </head>
 <body>
-
 <div class="container">
 <div class="card">
-
-<h1>量词练习<br>Счётные слова</h1>
-
-<div class="progress">
-<div class="progress-bar" id="bar"></div>
-</div>
-
+<h1>量词练习</h1>
+<div class="progress"><div class="bar" id="bar"></div></div>
 <div id="counter"></div>
-
+<div id="note" class="note"></div>
 <div class="question" id="question"></div>
-
 <div class="options" id="options"></div>
-
 <div class="feedback" id="feedback"></div>
-
-<button class="next" id="nextBtn">下一题 →</button>
-
+<button class="check" id="checkBtn">Проверить</button>
+<button class="next" id="nextBtn">下一题</button>
 </div>
 </div>
 
 <script>
-
 const questions=[
-{q:"一本___",a:"书",o:["书","面包","牛奶","咖啡"],e:"✅ 一本书<br><b>本</b> — счётное слово для книг."},
-{q:"一本___",a:"词典",o:["词典","啤酒","包子","茶"],e:"✅ 一本词典<br><b>本</b> — для словарей."},
-{q:"一本___",a:"本子",o:["本子","面条","水","咖啡"],e:"✅ 一本本子<br><b>本</b> — для тетрадей."},
-{q:"一个___",a:"面包",o:["面包","牛奶","词典","茶"],e:"✅ 一个面包<br><b>个</b> подходит для хлеба."},
-{q:"一个___",a:"包子",o:["包子","书","啤酒","咖啡"],e:"✅ 一个包子<br><b>个</b> подходит для баодзы."},
-{q:"一个___",a:"饺子",o:["饺子","牛奶","词典","茶"],e:"✅ 一个饺子<br><b>个</b> подходит для пельменей."},
-{q:"一个___",a:"书包",o:["书包","啤酒","茶","面条"],e:"✅ 一个书包<br><b>个</b> подходит для рюкзаков."},
-{q:"一支___",a:"笔",o:["笔","书","水","包子"],e:"✅ 一支笔<br><b>支</b> — счётное слово для ручек."},
-{q:"一瓶___",a:"牛奶",o:["牛奶","书","包子","词典"],e:"✅ 一瓶牛奶<br><b>瓶</b> — бутылка."},
-{q:"一瓶___",a:"水",o:["水","面包","词典","本子"],e:"✅ 一瓶水<br><b>瓶</b> — бутылка."},
-{q:"一瓶___",a:"啤酒",o:["啤酒","书包","包子","词典"],e:"✅ 一瓶啤酒<br><b>瓶</b> — бутылка."},
-{q:"一杯___",a:"茶",o:["茶","书","面包","书包"],e:"✅ 一杯茶<br><b>杯</b> — чашка или стакан."},
-{q:"一杯___",a:"咖啡",o:["咖啡","本子","书","包子"],e:"✅ 一杯咖啡<br><b>杯</b> — чашка кофе."},
-{q:"一碗___",a:"米饭",o:["米饭","茶","啤酒","书"],e:"✅ 一碗米饭<br><b>碗</b> — миска."},
-{q:"一碗___",a:"面条",o:["面条","牛奶","咖啡","本子"],e:"✅ 一碗面条<br><b>碗</b> — миска."},
-{q:"两瓶___",a:"牛奶",o:["牛奶","书","面包","词典"],e:"✅ 两瓶牛奶 = две бутылки молока."},
-{q:"三本___",a:"书",o:["书","咖啡","包子","茶"],e:"✅ 三本书 = три книги."},
-{q:"四个___",a:"包子",o:["包子","书","啤酒","牛奶"],e:"✅ 四个包子 = четыре баодзы."},
-{q:"五支___",a:"笔",o:["笔","书","茶","咖啡"],e:"✅ 五支笔 = пять ручек."},
-{q:"六杯___",a:"咖啡",o:["咖啡","书","词典","书包"],e:"✅ 六杯咖啡 = шесть чашек кофе."}
+{type:"single",q:"三___书",a:"本",o:["本","个","支","瓶"],e:"✅ 三本书<br><b>sān běn shū</b><br>Три книги.<br><br><b>本</b> — счётное слово для предметов с переплётом."},
+{type:"single",q:"两___词典",a:"本",o:["本","个","杯","瓶"],e:"✅ 两本词典<br><b>liǎng běn cídiǎn</b><br>Два словаря.<br><br><b>本</b> — для книг и словарей."},
+{type:"single",q:"五___本子",a:["本","个"],o:["本","个","支","碗"],e:"✅ 五本本子<br><b>wǔ běn běnzi</b><br>Пять тетрадей.<br><br><b>本</b> — специальное счётное слово для предметов с переплётом.<br><br>💡 Также можно сказать <b>五个本子</b>. В разговорной речи 个 встречается чаще."},
+{type:"single",q:"四___面包",a:"个",o:["个","本","支","杯"],e:"✅ 四个面包<br><b>sì gè miànbāo</b><br>Четыре хлеба.<br><br><b>个</b> — универсальное счётное слово."},
+{type:"single",q:"六___书包",a:"个",o:["个","本","瓶","碗"],e:"✅ 六个书包<br><b>liù gè shūbāo</b><br>Шесть рюкзаков.<br><br><b>个</b> — самое распространённое универсальное счётное слово."},
+{type:"single",q:"七___笔",a:"支",o:["支","个","本","瓶"],e:"✅ 七支笔<br><b>qī zhī bǐ</b><br>Семь ручек.<br><br><b>支</b> — счётное слово для длинных вытянутых предметов: ручек, карандашей и т.д."},
+{type:"single",q:"三___笔",a:"支",o:["支","本","杯","个"],e:"✅ 三支笔<br><b>sān zhī bǐ</b><br>Три ручки.<br><br><b>支</b> — для длинных вытянутых предметов."},
+{type:"multi",q:"两___牛奶",answers:["瓶","杯"],o:["瓶","杯","本","支"],e:"✅ 两瓶牛奶 — liǎng píng niúnǎi — две бутылки молока.<br>✅ 两杯牛奶 — liǎng bēi niúnǎi — два стакана молока.<br><br><b>瓶</b> — бутылка.<br><b>杯</b> — чашка или стакан."},
+{type:"multi",q:"五___水",answers:["瓶","杯"],o:["瓶","杯","本","个"],e:"✅ 五瓶水 — пять бутылок воды.<br>✅ 五杯水 — пять стаканов воды.<br><br><b>瓶</b> — бутылка.<br><b>杯</b> — чашка или стакан."},
+{type:"multi",q:"四___啤酒",answers:["瓶","杯"],o:["瓶","杯","本","支"],e:"✅ 四瓶啤酒 — четыре бутылки пива.<br>✅ 四杯啤酒 — четыре кружки/стакана пива.<br><br><b>瓶</b> — бутылка.<br><b>杯</b> — стакан, кружка."},
+{type:"single",q:"三___茶",a:"杯",o:["杯","瓶","本","个"],e:"✅ 三杯茶<br><b>sān bēi chá</b><br>Три чашки чая.<br><br><b>杯</b> — чашка или стакан напитка."},
+{type:"single",q:"两___咖啡",a:"杯",o:["杯","瓶","支","本"],e:"✅ 两杯咖啡<br><b>liǎng bēi kāfēi</b><br>Две чашки кофе.<br><br><b>杯</b> — чашка напитка."},
+{type:"single",q:"三___米饭",a:"碗",o:["碗","杯","瓶","个"],e:"✅ 三碗米饭<br><b>sān wǎn mǐfàn</b><br>Три миски риса.<br><br><b>碗</b> — миска еды."},
+{type:"single",q:"两___面条",a:"碗",o:["碗","本","个","支"],e:"✅ 两碗面条<br><b>liǎng wǎn miàntiáo</b><br>Две миски лапши.<br><br><b>碗</b> — миска еды."},
+{type:"single",q:"八___书",a:"本",o:["本","个","支","瓶"],e:"✅ 八本书<br><b>bā běn shū</b><br>Восемь книг.<br><br><b>本</b> — предметы с переплётом."}
 ];
 
-let current=0;
-let score=0;
+questions.sort(()=>Math.random()-0.5);
+let current=0,score=0,selected=[];
 
-function loadQuestion(){
+function loadQ(){
 const q=questions[current];
-document.getElementById("question").innerHTML=q.q;
-document.getElementById("counter").innerHTML=`${current+1}/${questions.length}`;
-document.getElementById("feedback").innerHTML="";
-document.getElementById("nextBtn").style.display="none";
-
-const options=document.getElementById("options");
+question.innerHTML=q.q;
+counter.innerHTML=(current+1)+"/"+questions.length;
+feedback.innerHTML="";
+selected=[];
 options.innerHTML="";
+nextBtn.style.display="none";
+checkBtn.style.display="inline-block";
+note.innerHTML=q.type==="multi"?"⚠️ <b style=\"font-size:28px\">ДВА</b> правильных ответа":"Выберите один ответ";
 
-q.o.sort(()=>Math.random()-0.5).forEach(item=>{
-const btn=document.createElement("button");
-btn.className="option";
-btn.innerHTML=item;
-btn.onclick=()=>check(item);
-options.appendChild(btn);
-});
-
-document.getElementById("bar").style.width=((current)/questions.length*100)+"%";
-}
-
-function check(choice){
-const q=questions[current];
-const fb=document.getElementById("feedback");
-
-if(choice===q.a){
-score++;
-fb.innerHTML=q.e;
-fb.style.color="green";
+q.o.sort(()=>Math.random()-0.5).forEach(v=>{
+let b=document.createElement("button");
+b.className="option";
+b.textContent=v;
+b.onclick=()=>{
+if(q.type==="single"){
+document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));
+selected=[v];
+b.classList.add("selected");
 }else{
-fb.innerHTML=`❌ Неверно.<br>Правильный ответ: <b>${q.a}</b><br><br>${q.e}`;
-fb.style.color="red";
+b.classList.toggle("selected");
+if(selected.includes(v)){
+selected=selected.filter(x=>x!==v);
+}else{
+selected.push(v);
+}
+}
+};
+options.appendChild(b);
+});
+bar.style.width=(current/questions.length*100)+"%";
 }
 
-document.querySelectorAll(".option").forEach(b=>b.disabled=true);
-document.getElementById("nextBtn").style.display="inline-block";
+checkBtn.onclick=()=>{
+const q=questions[current];
+let ok=false;
+
+if(q.type==="single"){
+ok=selected.length===1 && (Array.isArray(q.a)?q.a.includes(selected[0]):selected[0]===q.a);
+}else{
+ok=q.answers.every(x=>selected.includes(x)) &&
+selected.length===q.answers.length;
 }
 
-document.getElementById("nextBtn").onclick=()=>{
-current++;
-if(current>=questions.length){
-document.querySelector(".card").innerHTML=`
-<h1>🎉 Готово!</h1>
-<p class="score">Результат: ${score} / ${questions.length}</p>
-<button onclick="location.reload()">Начать заново</button>
-`;
-return;
+if(ok){
+score++;
+feedback.innerHTML=q.e;
+feedback.style.color="green";
+}else{
+feedback.innerHTML="❌ Неверно.<br><br>"+q.e;
+feedback.style.color="red";
 }
-loadQuestion();
+
+document.querySelectorAll(".option").forEach(x=>x.disabled=true);
+checkBtn.style.display="none";
+nextBtn.style.display="inline-block";
 };
 
-loadQuestion();
+nextBtn.onclick=()=>{
+current++;
+if(current>=questions.length){
+document.querySelector(".card").innerHTML=`<h1>🎉 Готово!</h1><h2>${score} / ${questions.length}</h2><button onclick="location.reload()">Начать заново</button>`;
+return;
+}
+loadQ();
+};
 
+loadQ();
 </script>
 </body>
 </html>
