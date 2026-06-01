@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多少钱练习</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f4f6f9;padding:20px}
+.card{max-width:900px;margin:auto;background:#fff;border-radius:20px;padding:25px;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,.1)}
+img{height:220px;max-width:100%;object-fit:contain}
+.price{font-size:38px;font-weight:bold;color:#e74c3c}
+.question{font-size:42px;margin:20px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.option{padding:16px;font-size:28px;border:none;border-radius:12px;background:#eef2ff;cursor:pointer}
+.feedback{margin-top:20px;font-size:22px;line-height:1.6}
+.next{margin-top:20px;padding:12px 24px;font-size:18px}
+.progress{font-size:22px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>多少钱？</h1>
+<div class="progress" id="progress"></div>
+<img id="productImg">
+<div class="price" id="price"></div>
+<div class="question" id="question"></div>
+<div class="options" id="options"></div>
+<div class="feedback" id="feedback"></div>
+<button class="next" id="nextBtn" style="display:none">下一题</button>
+</div>
+
+<script>
+const products=[
+{name:"茶",pinyin:"chá",price:8,image:"images/чай.png",measure:"杯",count:3},
+{name:"咖啡",pinyin:"kāfēi",price:12,image:"images/кофе.png",measure:"杯",count:2},
+{name:"饺子",pinyin:"jiǎozi",price:21,image:"images/дзяодзы.png",measure:"碗",count:1},
+{name:"包子",pinyin:"bāozi",price:5,image:"images/baozi.png",measure:"个",count:4},
+{name:"牛奶",pinyin:"niúnǎi",price:6,image:"images/молоко.png",measure:"瓶",count:2},
+{name:"水",pinyin:"shuǐ",price:3,image:"images/воды.png",measure:"瓶",count:3},
+{name:"书包",pinyin:"shūbāo",price:25,image:"images/рюкзак.png",measure:"个",count:4},
+{name:"笔",pinyin:"bǐ",price:4,image:"images/ручка.png",measure:"支",count:5},
+{name:"词典",pinyin:"cídiǎn",price:20,image:"images/словарь.png",measure:"本",count:2},
+{name:"书",pinyin:"shū",price:15,image:"images/книга.png",measure:"本",count:2},
+{name:"面包",pinyin:"miànbāo",price:9,image:"images/хлеб.png",measure:"个",count:3}
+];
+
+const countZh={2:"两",3:"三",4:"四",5:"五"};
+
+const countPinyin={2:"liǎng",3:"sān",4:"sì",5:"wǔ"};
+const measurePinyin={"本":"běn","个":"gè","支":"zhī","瓶":"píng","杯":"bēi"};
+
+function chinesePinyin(str){
+const map={
+"三十元":"sānshí yuán","二十四元":"èrshísì yuán","二十一元":"èrshíyī yuán","二十元":"èrshí yuán",
+"十二元":"shí'èr yuán","九元":"jiǔ yuán","一百元":"yìbǎi yuán","四十元":"sìshí yuán","二十七元":"èrshíqī yuán"
+};
+return map[str]||str;
+}
+
+function translation(p,total){
+const names={"茶":"茶","咖啡":"咖啡","饺子":"饺子","包子":"包子","牛奶":"牛奶","水":"水","书包":"书包","笔":"笔","词典":"词典","书":"书","面包":"面包"};
+const ru={
+"茶":"Три чашки чая стоят 24 юаня.",
+"咖啡":"Две чашки кофе стоят 24 юаня.",
+"饺子":"Одна миска дзяодзы стоит 21 юань.",
+"包子":"Четыре баодзы стоят 20 юаней.",
+"牛奶":"Две бутылки молока стоят 12 юаней.",
+"水":"Три бутылки воды стоят 9 юаней.",
+"书包":"Четыре рюкзака стоят 100 юаней.",
+"笔":"Пять ручек стоят 20 юаней.",
+"词典":"Два словаря стоят 40 юаней.",
+"书":"Две книги стоят 30 юаней.",
+"面包":"Три хлеба стоят 27 юаней."
+};
+return ru[p.name];
+}
+
+
+function numToZh(n){
+const d=["零","一","二","三","四","五","六","七","八","九"];
+if(n<10)return d[n];
+if(n===10)return "十";
+if(n<20)return "十"+d[n%10];
+if(n<100){let t=Math.floor(n/10),o=n%10;return o?d[t]+"十"+d[o]:d[t]+"十";}
+if(n===100)return "一百";
+if(n<110)return "一百零"+d[n-100];
+if(n<200)return "一百"+numToZh(n-100);
+return n.toString();
+}
+
+let list=[...products].sort(()=>Math.random()-0.5);
+let current=0,score=0;
+
+function loadQuestion(){
+const p=list[current];
+const total=p.price*p.count;
+
+document.getElementById("progress").textContent=`${current+1}/${list.length}`;
+document.getElementById("productImg").src=p.image;
+document.getElementById("price").textContent=p.price+"元";
+document.getElementById("question").textContent=`${countZh[p.count]}${p.measure}${p.name}多少钱？`;
+document.getElementById("feedback").innerHTML="";
+document.getElementById("nextBtn").style.display="none";
+
+const correct=numToZh(total)+"元";
+const answers=[
+correct,
+numToZh(total+p.price)+"元",
+numToZh(Math.max(1,total-p.price))+"元",
+numToZh(total*2)+"元"
+].sort(()=>Math.random()-0.5);
+
+const box=document.getElementById("options");
+box.innerHTML="";
+
+answers.forEach(a=>{
+const btn=document.createElement("button");
+btn.className="option";
+btn.textContent=a;
+btn.onclick=()=>checkAnswer(a,correct,p,total);
+box.appendChild(btn);
+});
+}
+
+function checkAnswer(answer,correct,p,total){
+const fb=document.getElementById("feedback");
+
+if(answer===correct){
+score++;
+fb.innerHTML=`✅ ${countZh[p.count]}${p.measure}${p.name}${correct}钱。<br><br>
+<b>${countZh[p.count]}${p.measure}${p.name}${correct}钱</b><br>
+${countPinyin[p.count]} ${measurePinyin[p.measure]} ${p.pinyin} ${chinesePinyin(correct)} qián<br><br>
+${translation(p,total)}<br><br>
+${p.price} × ${p.count} = ${total}<br><br>
+${correct} = ${total}元`;
+}else{
+fb.innerHTML=`❌ Правильный ответ: <b>${correct}</b><br><br>${p.price} × ${p.count} = ${total}<br><br>${correct} = ${total}元`;
+}
+
+document.querySelectorAll(".option").forEach(b=>b.disabled=true);
+document.getElementById("nextBtn").style.display="inline-block";
+}
+
+document.getElementById("nextBtn").onclick=()=>{
+current++;
+if(current>=list.length){
+document.querySelector(".card").innerHTML=`<h1>🎉 完成！</h1><h2>${score}/${list.length}</h2><h3>${Math.round(score/list.length*100)}%</h3>`;
+return;
+}
+loadQuestion();
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
