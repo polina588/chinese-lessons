@@ -1,121 +1,45 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Китайский — домашнее задание</title>
-    <style>
-        *{box-sizing:border-box}body{background:#f0f2f5;font-family:'Segoe UI',Roboto,sans-serif;margin:0;padding:20px;display:flex;justify-content:center;min-height:100vh}.container{max-width:700px;width:100%;background:white;border-radius:48px;box-shadow:0 20px 35px -12px rgba(0,0,0,0.2);overflow:hidden}.header{background:#1e2a3e;color:white;padding:24px 28px;text-align:center}.header h1{margin:0;font-size:1.8rem}.stats{display:flex;justify-content:space-between;padding:16px 28px;background:#fef9e6;flex-wrap:wrap;gap:12px}.score-box{background:#2c3e4e;padding:6px 16px;border-radius:60px;color:white;font-weight:bold}.progress-text{background:#ffe0a3;padding:6px 16px;border-radius:60px;font-weight:500}.message-area{background:#e9ecef;margin:0 20px 12px;padding:12px 20px;border-radius:60px;text-align:center}.question-card{background:white;margin:20px 28px;padding:32px 20px;border-radius:48px;text-align:center;border:1px solid #e9ecef}.chinese-word{font-size:3.3rem;font-weight:700;color:#c44536;background:#fff4ed;display:inline-block;padding:8px 24px;border-radius:80px}.pinyin{font-size:1.5rem;color:#2c6e6e;margin:12px 0 6px}.part-speech{font-size:0.9rem;background:#eef2f3;display:inline-block;padding:4px 18px;border-radius:60px}.options{display:flex;flex-direction:column;gap:12px;margin:20px 0}.option-btn{background:#f8f9fc;border:2px solid #dee2e6;border-radius:60px;padding:14px 20px;cursor:pointer;display:flex;align-items:center;gap:12px}.prefix{background:#d4dfe7;width:32px;height:32px;border-radius:60px;display:inline-flex;align-items:center;justify-content:center;font-weight:bold}.correct{background:#c8e6d9!important;border-color:#2b7a4b!important}.wrong{background:#ffe0db!important;border-color:#c73e2d!important}.next-btn{background:#2c5f8a;border:none;color:white;padding:14px 28px;font-size:1.1rem;font-weight:bold;border-radius:60px;cursor:pointer;width:100%;margin-top:16px}.reset-btn{background:#cfdde6;color:#1e2a3e;border:none;padding:10px 24px;border-radius:60px;cursor:pointer;margin:8px 28px 28px auto;display:block}footer{font-size:0.75rem;text-align:center;padding:18px 20px;color:#6c7a89}
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="header"><h1>📖 Домашнее задание</h1><p>Выберите перевод на русский</p></div>
-    <div class="stats"><div class="score-box">✅ Счёт: <span id="scoreValue">0</span></div><div class="progress-text">📌 Слово <span id="currentIndexSpan">1</span> / <span id="totalWordsSpan">0</span></div></div>
-    <div id="messageBox" class="message-area">🔍 Выберите вариант ответа</div>
-    <div id="questionArea"></div>
-    <button id="resetGameBtn" class="reset-btn">🔄 Начать заново</button>
-    <footer>китайский → русский</footer>
-</div>
-<script>
-    const wordsData = [
-        {hanzi:"你",pinyin:"nǐ",part:"местоим.",ru:"ты"},
-        {hanzi:"好",pinyin:"hǎo",part:"прил.",ru:"хороший; хорошо"},
-        {hanzi:"您",pinyin:"nín",part:"местоим.",ru:"Вы (вежливо)"},
-        {hanzi:"你们",pinyin:"nǐmen",part:"местоим.",ru:"вы (мн.ч.)"},
-        {hanzi:"老师",pinyin:"lǎoshī",part:"сущ.",ru:"учитель"},
-        {hanzi:"谢谢",pinyin:"xièxie",part:"глагол",ru:"благодарить"},
-        {hanzi:"不",pinyin:"bù",part:"наречие",ru:"не"},
-        {hanzi:"客气",pinyin:"kèqì",part:"прил.",ru:"вежливый"},
-        {hanzi:"不客气",pinyin:"bú kèqì",part:"глагол",ru:"Не за что"},
-        {hanzi:"对不起",pinyin:"duìbuqǐ",part:"глагол",ru:"Извините"},
-        {hanzi:"没关系",pinyin:"méi guānxi",part:"глагол",ru:"Ничего страшного"},
-        {hanzi:"再见",pinyin:"zàijiàn",part:"глагол",ru:"до свидания"},
-        {hanzi:"请",pinyin:"qǐng",part:"глагол",ru:"пожалуйста (просьба)"},
-        {hanzi:"进",pinyin:"jìn",part:"глагол",ru:"входить"},
-        {hanzi:"坐",pinyin:"zuò",part:"глагол",ru:"сидеть"},
-        {hanzi:"听",pinyin:"tīng",part:"глагол",ru:"слушать"},
-        {hanzi:"说",pinyin:"shuō",part:"глагол",ru:"говорить"},
-        {hanzi:"读",pinyin:"dú",part:"глагол",ru:"читать"},
-        {hanzi:"写",pinyin:"xiě",part:"глагол",ru:"писать"}
-    ];
-    let currentIndex=0, score=0, isAnswered=false, shuffled=[];
-    const total=wordsData.length;
-    function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
-    function updateUI(){document.getElementById('scoreValue').textContent=score;document.getElementById('currentIndexSpan').textContent=currentIndex+1;document.getElementById('totalWordsSpan').textContent=total;}
-    function getWord(){return wordsData[shuffled[currentIndex]];}
-    function generateOptions(correct){
-        let candidates=wordsData.filter(w=>w.ru!==correct).map(w=>w.ru);
-        candidates=[...new Set(candidates)];
-        while(candidates.length<3)candidates.push("вариант");
-        let wrongs=shuffle([...candidates]).slice(0,3);
-        let opts=[correct,...wrongs];
-        return shuffle(opts);
-    }
-    function render(){
-        if(currentIndex>=total){finishGame();return;}
-        const w=getWord();
-        const opts=generateOptions(w.ru);
-        const letters=['А','Б','В','Г'];
-        let optsHtml='';
-        opts.forEach((opt,i)=>{optsHtml+=`<div class="option-btn"><div class="prefix">${letters[i]}</div><div class="option-text">${opt}</div></div>`;});
-        document.getElementById('questionArea').innerHTML=`
-            <div class="question-card">
-                <div class="chinese-word">${w.hanzi}</div>
-                <div class="pinyin">${w.pinyin}</div>
-                <div class="part-speech">${w.part}</div>
-                <div class="options" id="optionsContainer">${optsHtml}</div>
-                <button id="nextBtn" class="next-btn" style="display:none;">➡ Следующее слово</button>
-            </div>`;
-        const btns=document.querySelectorAll('.option-btn');
-        const nextBtn=document.getElementById('nextBtn');
-        const handleClick=(e)=>{
-            if(isAnswered)return;
-            let btn=e.currentTarget;
-            let selected=btn.querySelector('.option-text').innerText;
-            const correctAns=getWord().ru;
-            isAnswered=true;
-            document.querySelectorAll('.option-btn').forEach(b=>{b.style.pointerEvents='none';
-                if(b.querySelector('.option-text').innerText===correctAns)b.classList.add('correct');
-                if(b===btn&&selected!==correctAns)b.classList.add('wrong');
-                if(b===btn&&selected===correctAns)b.classList.add('correct');
-            });
-            if(selected===correctAns){score++;document.getElementById('messageBox').innerHTML='✅ Правильно! Отлично!';document.getElementById('messageBox').style.background='#c8e6d9';}
-            else{document.getElementById('messageBox').innerHTML=`❌ Неверно. Правильно: «${correctAns}»`;document.getElementById('messageBox').style.background='#ffe0db';}
-            updateUI();
-            if(nextBtn)nextBtn.style.display='block';
-        };
-        btns.forEach(btn=>btn.addEventListener('click',handleClick));
-        if(nextBtn)nextBtn.onclick=()=>{if(isAnswered){currentIndex++;isAnswered=false;document.getElementById('messageBox').innerHTML='🔍 Выберите вариант ответа';document.getElementById('messageBox').style.background='#e9ecef';render();}};
-    }
-    function finishGame(){
-        let percent=Math.round((score/total)*100);
-        let msg=score===total?'🎉 Поздравляем! Идеально! 🎉':(score>=total*0.7?'👍 Отличный результат!':'📚 Хорошая попытка! Начните заново.');
-        document.getElementById('questionArea').innerHTML=`
-            <div class="question-card">
-                <div style="font-size:3rem;">🏆</div>
-                <h2>Упражнение завершено!</h2>
-                <p>Результат: ${score} из ${total} (${percent}%)</p>
-                <p>${msg}</p>
-                <button id="completionReset" class="next-btn" style="background:#2c6e6e;">🔄 Пройти ещё раз</button>
-            </div>`;
-        document.getElementById('completionReset')?.addEventListener('click',()=>resetGame());
-        document.getElementById('messageBox').innerHTML='🎯 Игра окончена!';
-    }
-    function resetGame(){
-        shuffled=[...Array(total).keys()];
-        shuffle(shuffled);
-        currentIndex=0;
-        score=0;
-        isAnswered=false;
-        updateUI();
-        document.getElementById('messageBox').innerHTML='🔍 Выберите вариант ответа';
-        document.getElementById('messageBox').style.background='#e9ecef';
-        render();
-    }
-    document.getElementById('resetGameBtn').addEventListener('click',()=>resetGame());
-    document.getElementById('totalWordsSpan').textContent=total;
-    resetGame();
-</script>
-</body>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>校园地图练习</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app" aria-live="polite">
+      <section class="panel">
+        <p class="eyebrow">Интерактивное упражнение</p>
+        <h1>Где находится…?</h1>
+
+        <div class="question-card">
+          <div>
+            <p class="label">Вопрос</p>
+            <p id="question" class="question">准备开始</p>
+            <p id="vocabHint" class="vocab-hint"></p>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback neutral">Нажмите на нужное место на карте.</p>
+
+        <div class="score-row">
+          <span>Правильно: <strong id="correctCount">0</strong></span>
+          <span>Ошибки: <strong id="wrongCount">0</strong></span>
+        </div>
+
+        <button id="restartButton" class="restart hidden" type="button">Пройти еще раз</button>
+      </section>
+
+      <section class="map-wrap" aria-label="校园地图">
+        <picture>
+          <source srcset="campusmapphone.png" media="(max-width: 700px)" />
+          <img id="campusMap" src="campusmappc.png" alt="校园地图" />
+        </picture>
+
+        <div id="hotspots" class="hotspots"></div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
 </html>
