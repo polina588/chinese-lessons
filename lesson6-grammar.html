@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Урок 6: 是 / 很 / 的 / 不是 / 不</title>
+    <style>
+      :root {
+        --bg: #f2f7fb;
+        --card: #ffffff;
+        --ink: #17212b;
+        --muted: #637083;
+        --blue: #2266d3;
+        --blue-dark: #164ca1;
+        --green: #16834a;
+        --red: #c73333;
+        --line: #d9e4f0;
+        --soft-blue: #eaf2ff;
+        --soft-green: #eaf8f0;
+        --soft-red: #fff0f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(34, 102, 211, 0.13), transparent 32rem),
+          linear-gradient(135deg, #f8fbff 0%, var(--bg) 100%);
+        font-family: "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+      }
+
+      .app {
+        width: min(980px, 100%);
+        margin: 0 auto;
+        padding: 28px 16px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--blue);
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(28px, 5vw, 44px);
+        line-height: 1.08;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .progress {
+        min-width: 150px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.76);
+        text-align: center;
+        box-shadow: 0 12px 30px rgba(31, 58, 89, 0.08);
+      }
+
+      .progress strong {
+        display: block;
+        font-size: 28px;
+      }
+
+      .card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--card);
+        box-shadow: 0 18px 45px rgba(31, 58, 89, 0.12);
+      }
+
+      .question-area {
+        padding: 26px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .task-label {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      .sentence {
+        margin: 0;
+        font-size: clamp(34px, 8vw, 64px);
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1.18;
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        padding: 20px 26px 0;
+      }
+
+      .option {
+        min-height: 70px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        cursor: pointer;
+        font-size: 30px;
+        font-weight: 900;
+        font-family: inherit;
+        transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+      }
+
+      .option:hover,
+      .option:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--blue);
+        background: var(--soft-blue);
+        outline: none;
+      }
+
+      .option.correct {
+        border-color: var(--green);
+        background: var(--soft-green);
+        color: var(--green);
+      }
+
+      .option.wrong {
+        border-color: var(--red);
+        background: var(--soft-red);
+        color: var(--red);
+      }
+
+      .option:disabled {
+        cursor: default;
+        transform: none;
+      }
+
+      .feedback {
+        min-height: 120px;
+        margin: 20px 26px;
+        padding: 18px;
+        border-radius: 8px;
+        background: #f8fbff;
+        border: 1px solid var(--line);
+      }
+
+      .feedback-title {
+        margin: 0 0 8px;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .feedback-title.correct {
+        color: var(--green);
+      }
+
+      .feedback-title.wrong {
+        color: var(--red);
+      }
+
+      .feedback-text {
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .answer-line {
+        margin: 8px 0;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .controls {
+        display: flex;
+        gap: 12px;
+        padding: 0 26px 26px;
+      }
+
+      .button {
+        flex: 1;
+        min-height: 52px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--blue);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .button:hover {
+        background: var(--blue-dark);
+      }
+
+      .button.secondary {
+        background: #e8eef5;
+        color: var(--ink);
+      }
+
+      .button.secondary:hover {
+        background: #dbe6f1;
+      }
+
+      .score {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .score-card {
+        padding: 16px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid var(--line);
+      }
+
+      .score-card span {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .score-card strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 30px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 700px) {
+        .hero,
+        .score {
+          grid-template-columns: 1fr;
+        }
+
+        .progress {
+          text-align: left;
+        }
+
+        .options {
+          grid-template-columns: 1fr;
+        }
+
+        .question-area,
+        .options,
+        .controls {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .feedback {
+          margin-left: 16px;
+          margin-right: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Урок 6 · грамматика</p>
+          <h1>Выбери пропущенное слово</h1>
+          <p class="subtitle">Тренируем 是, 很, 的, 不是 и 不 на словах из уроков 1-6.</p>
+        </div>
+        <div class="progress">
+          <span>Задание</span>
+          <strong><span id="currentNumber">1</span>/<span id="totalNumber">12</span></strong>
+        </div>
+      </header>
+
+      <section class="card" aria-live="polite">
+        <div class="question-area">
+          <p class="task-label">Вставь правильное слово:</p>
+          <p id="sentence" class="sentence"></p>
+        </div>
+
+        <div id="options" class="options"></div>
+
+        <div id="feedback" class="feedback">
+          <p id="feedbackTitle" class="feedback-title">Выбери один вариант.</p>
+          <p id="answerLine" class="answer-line hidden"></p>
+          <p id="feedbackText" class="feedback-text">Если ответ неверный, появится короткое объяснение.</p>
+        </div>
+
+        <div class="controls">
+          <button id="nextButton" class="button hidden" type="button">Дальше</button>
+          <button id="restartButton" class="button secondary hidden" type="button">Пройти еще раз</button>
+        </div>
+      </section>
+
+      <section class="score" aria-label="Результат">
+        <div class="score-card">
+          <span>Правильно</span>
+          <strong id="correctCount">0</strong>
+        </div>
+        <div class="score-card">
+          <span>Ошибки</span>
+          <strong id="wrongCount">0</strong>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const tasks = [
+        {
+          prompt: "他 ___ 老师。",
+          options: ["是", "很", "不"],
+          answer: "是",
+          sentence: "他是老师。",
+          pinyin: "tā shì lǎoshī.",
+          translation: "Он учитель.",
+          note: "是 связывает человека и то, кем он является.",
+          wrong: {
+            很: "很 не ставим перед существительным. 很 ставим перед прилагательным: 很忙, 很大, 很漂亮.",
+            不: "不 не ставим прямо перед существительным.",
+          },
+        },
+        {
+          prompt: "她 ___ 漂亮。",
+          options: ["很", "是", "的"],
+          answer: "很",
+          sentence: "她很漂亮。",
+          pinyin: "tā hěn piàoliang.",
+          translation: "Она красивая.",
+          note: "Перед прилагательным в простой фразе обычно ставим 很.",
+          wrong: {
+            是: "是 не ставим перед прилагательным.",
+            的: "的 здесь не нужен. 的 обычно показывает принадлежность: 我的书, 老师的办公室.",
+          },
+        },
+        {
+          prompt: "我 ___ 喝咖啡。",
+          options: ["不", "很", "是"],
+          answer: "不",
+          sentence: "我不喝咖啡。",
+          pinyin: "wǒ bù hē kāfēi.",
+          translation: "Я не пью кофе.",
+          note: "不 ставится перед глаголом, чтобы отрицать действие.",
+          wrong: {
+            很: "很 не ставим перед глаголом.",
+            是: "是 не ставим перед глаголом действия.",
+          },
+        },
+        {
+          prompt: "这 ___ 我的书。",
+          options: ["是", "很", "的"],
+          answer: "是",
+          sentence: "这是我的书。",
+          pinyin: "zhè shì wǒ de shū.",
+          translation: "Это моя книга.",
+          note: "是 связывает 这 и 我的书: это является моей книгой.",
+          wrong: {
+            很: "很 не ставим перед словосочетанием с существительным. 很 ставим перед прилагательным.",
+            的: "的 показывает принадлежность внутри словосочетания, например 我的书. Но 的 не связывает 这 и предмет.",
+          },
+        },
+        {
+          prompt: "老师 ___ 书很厚。",
+          options: ["的", "是", "很"],
+          answer: "的",
+          sentence: "老师的书很厚。",
+          pinyin: "lǎoshī de shū hěn hòu.",
+          translation: "Книга учителя толстая.",
+          note: "的 показывает принадлежность: 老师的书 — книга учителя.",
+          wrong: {
+            是: "是 не показывает принадлежность.",
+            很: "很 не ставим между двумя существительными. 很 ставим перед прилагательным.",
+          },
+        },
+        {
+          prompt: "我 ___ 忙。",
+          options: ["不", "是", "的"],
+          answer: "不",
+          sentence: "我不忙。",
+          pinyin: "wǒ bù máng.",
+          translation: "Я не занят/занята.",
+          note: "不 ставится перед прилагательным, когда мы отрицаем качество.",
+          wrong: {
+            是: "是 не ставим перед прилагательным.",
+            的: "的 здесь не нужен. 的 показывает принадлежность, например 我的书.",
+          },
+        },
+        {
+          prompt: "教室 ___ 大。",
+          options: ["很", "是", "的"],
+          answer: "很",
+          sentence: "教室很大。",
+          pinyin: "jiàoshì hěn dà.",
+          translation: "Аудитория большая.",
+          note: "很 ставится перед прилагательным 大.",
+          wrong: {
+            是: "是 не ставим перед прилагательным.",
+            的: "的 не нужен между предметом и его качеством.",
+          },
+        },
+        {
+          prompt: "这 ___ 词典。",
+          options: ["不是", "很", "的"],
+          answer: "不是",
+          sentence: "这不是词典。",
+          pinyin: "zhè bú shì cídiǎn.",
+          translation: "Это не словарь.",
+          note: "不是 — отрицание связки 是 перед существительным.",
+          wrong: {
+            很: "很 не ставим перед существительным. 很 ставим перед прилагательным.",
+            的: "的 показывает принадлежность или описание, например 我的词典. Здесь 的 не связывает “это” и предмет.",
+          },
+        },
+        {
+          prompt: "我 ___ 买书包。",
+          options: ["不", "是", "很"],
+          answer: "不",
+          sentence: "我不买书包。",
+          pinyin: "wǒ bù mǎi shūbāo.",
+          translation: "Я не покупаю рюкзак.",
+          note: "不 отрицает действие 买.",
+          wrong: {
+            是: "是 не ставим перед глаголом действия.",
+            很: "很 не ставим перед глаголом.",
+          },
+        },
+        {
+          prompt: "她 ___ 朋友很聪明。",
+          options: ["的", "是", "不"],
+          answer: "的",
+          sentence: "她的朋友很聪明。",
+          pinyin: "tā de péngyou hěn cōngming.",
+          translation: "Её друг умный.",
+          note: "的 показывает принадлежность: 她的朋友 — её друг.",
+          wrong: {
+            是: "是 не показывает принадлежность.",
+            不: "不 не показывает принадлежность.",
+          },
+        },
+        {
+          prompt: "这本书 ___ 新。",
+          options: ["很", "是", "的"],
+          answer: "很",
+          sentence: "这本书很新。",
+          pinyin: "zhè běn shū hěn xīn.",
+          translation: "Эта книга новая.",
+          note: "很 ставится перед прилагательным 新.",
+          wrong: {
+            是: "是 не ставим перед прилагательным.",
+            的: "的 не нужен между предметом и его качеством.",
+          },
+        },
+        {
+          prompt: "他 ___ 我的同学。",
+          options: ["不是", "很", "的"],
+          answer: "不是",
+          sentence: "他不是我的同学。",
+          pinyin: "tā bú shì wǒ de tóngxué.",
+          translation: "Он не мой однокурсник.",
+          note: "不是 отрицает 是 перед существительным или именной группой.",
+          wrong: {
+            很: "很 не ставим перед словосочетанием с существительным. 很 ставим перед прилагательным.",
+            的: "的 показывает принадлежность или описание. Здесь 的 не связывает 他 и 我的同学.",
+          },
+        },
+      ];
+
+      const sentenceEl = document.querySelector("#sentence");
+      const optionsEl = document.querySelector("#options");
+      const feedbackTitleEl = document.querySelector("#feedbackTitle");
+      const feedbackTextEl = document.querySelector("#feedbackText");
+      const answerLineEl = document.querySelector("#answerLine");
+      const nextButton = document.querySelector("#nextButton");
+      const restartButton = document.querySelector("#restartButton");
+      const currentNumberEl = document.querySelector("#currentNumber");
+      const totalNumberEl = document.querySelector("#totalNumber");
+      const correctCountEl = document.querySelector("#correctCount");
+      const wrongCountEl = document.querySelector("#wrongCount");
+
+      let queue = [];
+      let currentIndex = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+      let answeredCorrectly = false;
+
+      function shuffle(items) {
+        return [...items].sort(() => Math.random() - 0.5);
+      }
+
+      function currentTask() {
+        return queue[currentIndex];
+      }
+
+      function updateScore() {
+        correctCountEl.textContent = correctCount;
+        wrongCountEl.textContent = wrongCount;
+        currentNumberEl.textContent = Math.min(currentIndex + 1, queue.length);
+        totalNumberEl.textContent = queue.length;
+      }
+
+      function setNeutralFeedback() {
+        feedbackTitleEl.textContent = "Выбери один вариант.";
+        feedbackTitleEl.className = "feedback-title";
+        feedbackTextEl.textContent = "Если ответ неверный, появится короткое объяснение.";
+        answerLineEl.textContent = "";
+        answerLineEl.classList.add("hidden");
+      }
+
+      function renderTask() {
+        const task = currentTask();
+        answeredCorrectly = false;
+        sentenceEl.textContent = task.prompt;
+        optionsEl.innerHTML = "";
+        nextButton.classList.add("hidden");
+        restartButton.classList.add("hidden");
+        setNeutralFeedback();
+        updateScore();
+
+        shuffle(task.options).forEach((option) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "option";
+          button.textContent = option;
+          button.addEventListener("click", () => chooseAnswer(option, button));
+          optionsEl.appendChild(button);
+        });
+      }
+
+      function chooseAnswer(option, button) {
+        if (answeredCorrectly) return;
+
+        const task = currentTask();
+        if (option === task.answer) {
+          answeredCorrectly = true;
+          correctCount += 1;
+          updateScore();
+          button.classList.add("correct");
+          [...optionsEl.children].forEach((item) => {
+            item.disabled = true;
+          });
+
+          feedbackTitleEl.textContent = "✅ 对！";
+          feedbackTitleEl.className = "feedback-title correct";
+          answerLineEl.textContent = `${task.sentence} ${task.pinyin} — ${task.translation}`;
+          answerLineEl.classList.remove("hidden");
+          feedbackTextEl.textContent = task.note;
+          nextButton.classList.remove("hidden");
+        } else {
+          wrongCount += 1;
+          updateScore();
+          button.classList.add("wrong");
+          window.setTimeout(() => button.classList.remove("wrong"), 600);
+          feedbackTitleEl.textContent = "❌ 错。";
+          feedbackTitleEl.className = "feedback-title wrong";
+          answerLineEl.textContent = "";
+          answerLineEl.classList.add("hidden");
+          feedbackTextEl.textContent = task.wrong[option] || "Этот вариант грамматически не подходит.";
+        }
+      }
+
+      function finishExercise() {
+        sentenceEl.textContent = "练习完成！";
+        optionsEl.innerHTML = "";
+        feedbackTitleEl.textContent = "Готово!";
+        feedbackTitleEl.className = "feedback-title correct";
+        answerLineEl.textContent = `Правильно: ${correctCount}. Ошибки: ${wrongCount}.`;
+        answerLineEl.classList.remove("hidden");
+        feedbackTextEl.textContent = "Можно пройти упражнение еще раз: порядок заданий и вариантов поменяется.";
+        nextButton.classList.add("hidden");
+        restartButton.classList.remove("hidden");
+      }
+
+      function goNext() {
+        currentIndex += 1;
+        if (currentIndex >= queue.length) {
+          finishExercise();
+        } else {
+          renderTask();
+        }
+      }
+
+      function startExercise() {
+        queue = shuffle(tasks);
+        currentIndex = 0;
+        correctCount = 0;
+        wrongCount = 0;
+        renderTask();
+      }
+
+      nextButton.addEventListener("click", goNext);
+      restartButton.addEventListener("click", startExercise);
+      startExercise();
+    </script>
+  </body>
+</html>
