@@ -71,6 +71,7 @@ const feedbackEl = document.querySelector("#feedback");
 const correctCountEl = document.querySelector("#correctCount");
 const wrongCountEl = document.querySelector("#wrongCount");
 const hotspotsEl = document.querySelector("#hotspots");
+const nextButton = document.querySelector("#nextButton");
 const restartButton = document.querySelector("#restartButton");
 
 let questions = [];
@@ -79,6 +80,7 @@ let currentPlace = null;
 let correctCount = 0;
 let wrongCount = 0;
 let isFinished = false;
+let waitingForNext = false;
 
 function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
@@ -130,8 +132,10 @@ function setFeedback(text, type) {
 
 function showQuestion() {
   currentPlace = questions[currentIndex];
+  waitingForNext = false;
   questionEl.textContent = makeQuestion(currentPlace);
   vocabHintEl.textContent = "";
+  nextButton.classList.add("hidden");
   setFeedback("Нажмите на нужное место на карте.", "neutral");
 }
 
@@ -142,6 +146,8 @@ function startGame() {
   correctCount = 0;
   wrongCount = 0;
   isFinished = false;
+  waitingForNext = false;
+  nextButton.classList.add("hidden");
   restartButton.classList.add("hidden");
   hotspotsEl.querySelectorAll(".hotspot").forEach((button) => {
     button.disabled = false;
@@ -152,8 +158,10 @@ function startGame() {
 
 function finishGame() {
   isFinished = true;
+  waitingForNext = false;
   questionEl.textContent = "Упражнение завершено!";
   vocabHintEl.textContent = "";
+  nextButton.classList.add("hidden");
   setFeedback(`Правильно: ${correctCount}  Ошибки: ${wrongCount}`, "correct");
   restartButton.classList.remove("hidden");
   hotspotsEl.querySelectorAll(".hotspot").forEach((button) => {
@@ -162,21 +170,14 @@ function finishGame() {
 }
 
 function checkAnswer(placeId) {
-  if (isFinished || !currentPlace) return;
+  if (isFinished || waitingForNext || !currentPlace) return;
 
   if (placeId === currentPlace.id) {
     correctCount += 1;
     updateScore();
     setFeedback(`✅ 对！ ${vocabText(currentPlace)}`, "correct");
-
-    setTimeout(() => {
-      currentIndex += 1;
-      if (currentIndex >= questions.length) {
-        finishGame();
-      } else {
-        showQuestion();
-      }
-    }, 850);
+    waitingForNext = true;
+    nextButton.classList.remove("hidden");
   } else {
     wrongCount += 1;
     updateScore();
@@ -184,7 +185,17 @@ function checkAnswer(placeId) {
   }
 }
 
+function goNext() {
+  currentIndex += 1;
+  if (currentIndex >= questions.length) {
+    finishGame();
+  } else {
+    showQuestion();
+  }
+}
+
 window.addEventListener("resize", renderHotspots);
+nextButton.addEventListener("click", goNext);
 restartButton.addEventListener("click", startGame);
 
 renderHotspots();
