@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Урок 6: порядок слов</title>
+    <style>
+      :root {
+        --bg: #f5f8ff;
+        --card: #ffffff;
+        --ink: #172033;
+        --muted: #66728a;
+        --blue: #245fd6;
+        --blue-dark: #1948a5;
+        --green: #16824d;
+        --red: #c73535;
+        --orange: #b76a00;
+        --line: #dbe4f1;
+        --soft-blue: #edf4ff;
+        --soft-green: #ecf9f1;
+        --soft-red: #fff0f0;
+        --soft-orange: #fff7e8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 8%, rgba(36, 95, 214, 0.16), transparent 28rem),
+          linear-gradient(135deg, #fbfdff 0%, var(--bg) 100%);
+        font-family: "Microsoft YaHei", "Noto Sans SC", Arial, sans-serif;
+      }
+
+      .app {
+        width: min(1040px, 100%);
+        margin: 0 auto;
+        padding: 28px 16px;
+      }
+
+      .top {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--blue);
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 5vw, 48px);
+        line-height: 1.08;
+      }
+
+      .subtitle {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .progress {
+        min-width: 150px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 30px rgba(29, 55, 90, 0.08);
+      }
+
+      .progress span {
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .progress strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 30px;
+      }
+
+      .card {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--card);
+        box-shadow: 0 18px 45px rgba(29, 55, 90, 0.12);
+      }
+
+      .task {
+        padding: 24px 26px;
+        border-bottom: 1px solid var(--line);
+        background: linear-gradient(180deg, #fff 0%, #f9fbff 100%);
+      }
+
+      .label {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      .translation {
+        margin: 0;
+        font-size: clamp(24px, 5vw, 40px);
+        font-weight: 900;
+        line-height: 1.18;
+      }
+
+      .work {
+        padding: 22px 26px;
+      }
+
+      .answer-zone,
+      .tile-zone {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        direction: ltr;
+        justify-content: flex-start;
+        align-content: flex-start;
+        min-height: 82px;
+        padding: 14px;
+        border: 2px dashed var(--line);
+        border-radius: 8px;
+        background: #fbfdff;
+      }
+
+      .answer-zone {
+        margin-bottom: 18px;
+        border-color: rgba(36, 95, 214, 0.32);
+        background: var(--soft-blue);
+      }
+
+      .zone-title {
+        width: 100%;
+        margin: 0 0 4px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .tile {
+        direction: ltr;
+        unicode-bidi: isolate;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-size: 28px;
+        font-weight: 900;
+        min-width: 62px;
+        min-height: 54px;
+        padding: 8px 14px;
+        transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+      }
+
+      .tile:hover,
+      .tile:focus-visible {
+        transform: translateY(-2px);
+        border-color: var(--blue);
+        background: #f4f8ff;
+        outline: none;
+      }
+
+      .tile.selected {
+        border-color: var(--blue);
+        background: #fff;
+        box-shadow: 0 6px 16px rgba(36, 95, 214, 0.14);
+      }
+
+      .tile.dragging {
+        opacity: 0.55;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .button {
+        min-height: 52px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--blue);
+        color: white;
+        cursor: pointer;
+        font: inherit;
+        font-size: 17px;
+        font-weight: 900;
+      }
+
+      .button:hover {
+        background: var(--blue-dark);
+      }
+
+      .button.secondary {
+        background: #e8eef6;
+        color: var(--ink);
+      }
+
+      .button.secondary:hover {
+        background: #dce6f2;
+      }
+
+      .button:disabled {
+        cursor: default;
+        opacity: 0.55;
+      }
+
+      .button:disabled:hover {
+        background: var(--blue);
+      }
+
+      .feedback {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f9fbff;
+      }
+
+      .feedback.correct {
+        border-color: rgba(22, 130, 77, 0.35);
+        background: var(--soft-green);
+      }
+
+      .feedback.wrong {
+        border-color: rgba(199, 53, 53, 0.32);
+        background: var(--soft-red);
+      }
+
+      .feedback.hint {
+        border-color: rgba(183, 106, 0, 0.35);
+        background: var(--soft-orange);
+      }
+
+      .feedback-title {
+        margin: 0 0 8px;
+        font-size: 23px;
+        font-weight: 900;
+      }
+
+      .feedback-title.correct {
+        color: var(--green);
+      }
+
+      .feedback-title.wrong {
+        color: var(--red);
+      }
+
+      .feedback-title.hint {
+        color: var(--orange);
+      }
+
+      .feedback-text {
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.5;
+      }
+
+      .answer-line {
+        margin: 6px 0;
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 1.35;
+      }
+
+      .score {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .score-card {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.8);
+      }
+
+      .score-card span {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .score-card strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 30px;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 760px) {
+        .top,
+        .score,
+        .actions {
+          grid-template-columns: 1fr;
+        }
+
+        .task,
+        .work {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .tile {
+          min-width: 56px;
+          min-height: 50px;
+          font-size: 25px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <div>
+          <p class="eyebrow">Урок 6 · порядок слов</p>
+          <h1>Собери предложение</h1>
+          <p class="subtitle">Нажимай на китайские плитки в правильном порядке, затем нажми «Готово».</p>
+        </div>
+        <div class="progress">
+          <span>Задание</span>
+          <strong><span id="currentNumber">1</span>/<span id="totalNumber">15</span></strong>
+        </div>
+      </header>
+
+      <section class="card" aria-live="polite">
+        <div class="task">
+          <p class="label">Собери китайское предложение:</p>
+          <p id="translation" class="translation"></p>
+        </div>
+
+        <div class="work">
+          <div id="answerZone" class="answer-zone">
+            <p class="zone-title">Твой ответ:</p>
+          </div>
+
+          <div id="tileZone" class="tile-zone">
+            <p class="zone-title">Плитки:</p>
+          </div>
+
+          <div class="actions">
+            <button id="checkButton" class="button" type="button">Готово</button>
+            <button id="clearButton" class="button secondary" type="button">Очистить</button>
+            <button id="nextButton" class="button hidden" type="button">Дальше</button>
+            <button id="restartButton" class="button secondary hidden" type="button">Пройти еще раз</button>
+          </div>
+
+          <div id="feedback" class="feedback">
+            <p id="feedbackTitle" class="feedback-title">Собери предложение из плиток.</p>
+            <p id="answerLine" class="answer-line hidden"></p>
+            <div id="feedbackText" class="feedback-text">Если ошибёшься, подсказки будут появляться постепенно.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="score" aria-label="Результат">
+        <div class="score-card">
+          <span>Правильно</span>
+          <strong id="correctCount">0</strong>
+        </div>
+        <div class="score-card">
+          <span>Ошибки</span>
+          <strong id="wrongCount">0</strong>
+        </div>
+        <div class="score-card">
+          <span>Попытка в задании</span>
+          <strong id="tryCount">1</strong>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const tasks = [
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Это книга моего учителя.",
+          tiles: ["这", "是", "我", "老师", "的", "书"],
+          answer: ["这", "是", "我", "老师", "的", "书"],
+          sentence: "这是我老师的书。",
+          pinyin: "zhè shì wǒ lǎoshī de shū.",
+          translation: "Это книга моего учителя.",
+          hints: [
+            "Подсказка-перевод: “это” + “является” + “книга моего учителя”.",
+            "Грамматика: для принадлежности используем 的. Сначала владелец, потом 的, потом предмет.",
+            "Более очевидно: начни с 这 是, а “книга моего учителя” собери как 我 老师 的 书.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Мой друг не пьёт кофе.",
+          tiles: ["我", "的", "朋友", "不", "喝", "咖啡"],
+          answer: ["我", "的", "朋友", "不", "喝", "咖啡"],
+          sentence: "我的朋友不喝咖啡。",
+          pinyin: "wǒ de péngyou bù hē kāfēi.",
+          translation: "Мой друг не пьёт кофе.",
+          hints: [
+            "Подсказка-перевод: “мой друг” + “не пьёт” + “кофе”.",
+            "Грамматика: 不 ставим перед глаголом действия.",
+            "Более очевидно: “мой друг” = 我 的 朋友, “не пьёт кофе” = 不 喝 咖啡.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Аудитория моего учителя большая.",
+          tiles: ["我", "老师", "的", "教室", "很", "大"],
+          answer: ["我", "老师", "的", "教室", "很", "大"],
+          sentence: "我老师的教室很大。",
+          pinyin: "wǒ lǎoshī de jiàoshì hěn dà.",
+          translation: "Аудитория моего учителя большая.",
+          hints: [
+            "Подсказка-перевод: “аудитория моего учителя” + “большая”.",
+            "Грамматика: 很 ставим перед прилагательным, а 的 показывает принадлежность.",
+            "Более очевидно: сначала собери 我 老师 的 教室, потом 很 大.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Она не моя однокурсница, она моя учительница.",
+          tiles: ["她", "不", "是", "我", "的", "同学", "她", "是", "我", "的", "老师"],
+          answer: ["她", "不", "是", "我", "的", "同学", "她", "是", "我", "的", "老师"],
+          sentence: "她不是我的同学，她是我的老师。",
+          pinyin: "tā bú shì wǒ de tóngxué, tā shì wǒ de lǎoshī.",
+          translation: "Она не моя однокурсница, она моя учительница.",
+          hints: [
+            "Подсказка-перевод: сначала “она не моя однокурсница”, потом “она моя учительница”.",
+            "Грамматика: 不是 отрицает 是 перед существительным или профессией.",
+            "Более очевидно: первая часть начинается 她 不 是, вторая часть начинается 她 是.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Я хочу купить словарь и тетрадь.",
+          tiles: ["我", "要", "买", "词典", "和", "本子"],
+          answer: ["我", "要", "买", "词典", "和", "本子"],
+          sentence: "我要买词典和本子。",
+          pinyin: "wǒ yào mǎi cídiǎn hé běnzi.",
+          translation: "Я хочу купить словарь и тетрадь.",
+          hints: [
+            "Подсказка-перевод: “я” + “хочу” + “купить” + “словарь и тетрадь”.",
+            "Грамматика: 要 ставим перед действием. Так получается “хочу что-то сделать”.",
+            "Более очевидно: начни с 我 要 买, а два предмета соедини через 和.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Сколько стоит эта чашка кофе?",
+          tiles: ["这", "杯", "咖啡", "多少", "钱"],
+          answer: ["这", "杯", "咖啡", "多少", "钱"],
+          sentence: "这杯咖啡多少钱？",
+          pinyin: "zhè bēi kāfēi duōshǎo qián?",
+          translation: "Сколько стоит эта чашка кофе?",
+          hints: [
+            "Подсказка-перевод: “эта чашка кофе” + “сколько стоит”.",
+            "Грамматика: 多少钱 обычно ставим после предмета.",
+            "Более очевидно: сначала 这 杯 咖啡, потом 多少 钱.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Где находится кабинет учителя?",
+          tiles: ["老师", "的", "办公室", "在", "哪儿"],
+          answer: ["老师", "的", "办公室", "在", "哪儿"],
+          sentence: "老师的办公室在哪儿？",
+          pinyin: "lǎoshī de bàngōngshì zài nǎr?",
+          translation: "Где находится кабинет учителя?",
+          hints: [
+            "Подсказка-перевод: “кабинет учителя” + “находится где?”.",
+            "Грамматика: вопрос о месте строится как место + 在 + 哪儿.",
+            "Более очевидно: “кабинет учителя” = 老师 的 办公室, потом 在 哪儿.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Библиотека там, банк тоже там.",
+          tiles: ["图书馆", "在", "那儿", "银行", "也", "在", "那儿"],
+          answer: ["图书馆", "在", "那儿", "银行", "也", "在", "那儿"],
+          sentence: "图书馆在那儿，银行也在那儿。",
+          pinyin: "túshūguǎn zài nàr, yínháng yě zài nàr.",
+          translation: "Библиотека там, банк тоже там.",
+          hints: [
+            "Подсказка-перевод: “библиотека находится там”, потом “банк тоже находится там”.",
+            "Грамматика: 也 обычно ставим перед глаголом или 在.",
+            "Более очевидно: первая часть 图书馆 在 那儿, вторая часть 银行 也 在 那儿.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Моя старшая сестра красивая.",
+          tiles: ["我", "的", "姐姐", "很", "漂亮"],
+          answer: ["我", "的", "姐姐", "很", "漂亮"],
+          sentence: "我的姐姐很漂亮。",
+          pinyin: "wǒ de jiějie hěn piàoliang.",
+          translation: "Моя старшая сестра красивая.",
+          hints: [
+            "Подсказка-перевод: “моя старшая сестра” + “красивая”.",
+            "Грамматика: 的 показывает принадлежность, 很 ставим перед прилагательным.",
+            "Более очевидно: сначала 我 的 姐姐, потом 很 漂亮.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Его младший брат не занят, он голодный.",
+          tiles: ["他", "的", "弟弟", "不", "忙", "他", "很", "饿"],
+          answer: ["他", "的", "弟弟", "不", "忙", "他", "很", "饿"],
+          sentence: "他的弟弟不忙，他很饿。",
+          pinyin: "tā de dìdi bù máng, tā hěn è.",
+          translation: "Его младший брат не занят, он голодный.",
+          hints: [
+            "Подсказка-перевод: “его младший брат не занят”, потом “он голодный”.",
+            "Грамматика: 不 ставим перед прилагательным для отрицания, 很 ставим перед прилагательным для описания.",
+            "Более очевидно: первая часть 他 的 弟弟 不 忙, вторая часть 他 很 饿.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Давайте я немного представлю моего друга.",
+          tiles: ["我", "来", "介绍", "一下儿", "我", "的", "朋友"],
+          answer: ["我", "来", "介绍", "一下儿", "我", "的", "朋友"],
+          sentence: "我来介绍一下儿我的朋友。",
+          pinyin: "wǒ lái jièshào yíxiàr wǒ de péngyou.",
+          translation: "Давайте я немного представлю моего друга.",
+          hints: [
+            "Подсказка-перевод: “я представлю немного” + “моего друга”.",
+            "Грамматика: 一下儿 ставим после глагола, чтобы смягчить действие.",
+            "Более очевидно: начни с 我 来 介绍 一下儿, потом добавь 我 的 朋友.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Это не моя книга, это словарь учителя.",
+          tiles: ["这", "不", "是", "我", "的", "书", "这", "是", "老师", "的", "词典"],
+          answer: ["这", "不", "是", "我", "的", "书", "这", "是", "老师", "的", "词典"],
+          sentence: "这不是我的书，这是老师的词典。",
+          pinyin: "zhè bú shì wǒ de shū, zhè shì lǎoshī de cídiǎn.",
+          translation: "Это не моя книга, это словарь учителя.",
+          hints: [
+            "Подсказка-перевод: сначала “это не моя книга”, потом “это словарь учителя”.",
+            "Грамматика: 不是 отрицает 是, а 的 показывает принадлежность.",
+            "Более очевидно: первая часть 这 不 是 我 的 书, вторая часть 这 是 老师 的 词典.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Мой друг учит китайский язык.",
+          tiles: ["我", "的", "朋友", "学习", "汉语"],
+          answer: ["我", "的", "朋友", "学习", "汉语"],
+          sentence: "我的朋友学习汉语。",
+          pinyin: "wǒ de péngyou xuéxí Hànyǔ.",
+          translation: "Мой друг учит китайский язык.",
+          hints: [
+            "Подсказка-перевод: “мой друг” + “учит” + “китайский язык”.",
+            "Грамматика: 的 показывает принадлежность, а 学习 — действие.",
+            "Более очевидно: сначала 我 的 朋友, потом 学习 汉语.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Его книга новая, моя книга толстая.",
+          tiles: ["他", "的", "书", "很", "新", "我", "的", "书", "很", "厚"],
+          answer: ["他", "的", "书", "很", "新", "我", "的", "书", "很", "厚"],
+          sentence: "他的书很新，我的书很厚。",
+          pinyin: "tā de shū hěn xīn, wǒ de shū hěn hòu.",
+          translation: "Его книга новая, моя книга толстая.",
+          hints: [
+            "Подсказка-перевод: “его книга новая”, потом “моя книга толстая”.",
+            "Грамматика: 很 ставим перед прилагательными 新 и 厚.",
+            "Более очевидно: первая часть 他 的 书 很 新, вторая часть 我 的 书 很 厚.",
+          ],
+        },
+        {
+          prompt: "Используй все плитки и поставь слова в правильном порядке.",
+          ru: "Мой однокурсник хочет пить воду.",
+          tiles: ["我", "的", "同学", "要", "喝", "水"],
+          answer: ["我", "的", "同学", "要", "喝", "水"],
+          sentence: "我的同学要喝水。",
+          pinyin: "wǒ de tóngxué yào hē shuǐ.",
+          translation: "Мой однокурсник хочет пить воду.",
+          hints: [
+            "Подсказка-перевод: “мой однокурсник” + “хочет пить” + “воду”.",
+            "Грамматика: 要 ставим перед действием. Так получается “хочет что-то сделать”.",
+            "Более очевидно: сначала 我 的 同学, потом 要 喝 水.",
+          ],
+        },
+      ];
+
+      const vocab = {
+        这: "zhè — это",
+        是: "shì — быть, являться",
+        我: "wǒ — я",
+        老师: "lǎoshī — учитель",
+        的: "de — частица принадлежности",
+        书: "shū — книга",
+        朋友: "péngyou — друг",
+        不: "bù — не",
+        喝: "hē — пить",
+        咖啡: "kāfēi — кофе",
+        教室: "jiàoshì — аудитория",
+        很: "hěn — показатель перед прилагательным",
+        大: "dà — большой",
+        她: "tā — она",
+        同学: "tóngxué — однокурсник",
+        要: "yào — хотеть, надо",
+        买: "mǎi — покупать",
+        词典: "cídiǎn — словарь",
+        和: "hé — и",
+        本子: "běnzi — тетрадь",
+        杯: "bēi — чашка, стакан",
+        多少: "duōshǎo — сколько",
+        钱: "qián — деньги",
+        办公室: "bàngōngshì — офис, кабинет",
+        在: "zài — находиться",
+        哪儿: "nǎr — где",
+        图书馆: "túshūguǎn — библиотека",
+        那儿: "nàr — там",
+        银行: "yínháng — банк",
+        也: "yě — тоже",
+        姐姐: "jiějie — старшая сестра",
+        漂亮: "piàoliang — красивая",
+        他: "tā — он",
+        弟弟: "dìdi — младший брат",
+        忙: "máng — занятой",
+        饿: "è — голодный",
+        来: "lái — приходить; здесь: давай я...",
+        介绍: "jièshào — представлять",
+        一下儿: "yíxiàr — немного, смягчение действия",
+        汉语: "Hànyǔ — китайский язык",
+        学习: "xuéxí — учиться, изучать",
+        新: "xīn — новый",
+        厚: "hòu — толстый",
+        水: "shuǐ — вода",
+      };
+
+      const translationEl = document.querySelector("#translation");
+      const answerZone = document.querySelector("#answerZone");
+      const tileZone = document.querySelector("#tileZone");
+      const checkButton = document.querySelector("#checkButton");
+      const clearButton = document.querySelector("#clearButton");
+      const nextButton = document.querySelector("#nextButton");
+      const restartButton = document.querySelector("#restartButton");
+      const feedback = document.querySelector("#feedback");
+      const feedbackTitle = document.querySelector("#feedbackTitle");
+      const feedbackText = document.querySelector("#feedbackText");
+      const answerLine = document.querySelector("#answerLine");
+      const currentNumber = document.querySelector("#currentNumber");
+      const totalNumber = document.querySelector("#totalNumber");
+      const correctCountEl = document.querySelector("#correctCount");
+      const wrongCountEl = document.querySelector("#wrongCount");
+      const tryCountEl = document.querySelector("#tryCount");
+
+      let queue = [];
+      let taskIndex = 0;
+      let selected = [];
+      let mistakesThisTask = 0;
+      let correctCount = 0;
+      let wrongCount = 0;
+      let locked = false;
+      let shownHints = [];
+      let draggedSelectedIndex = null;
+
+      function shuffle(items) {
+        return [...items].sort(() => Math.random() - 0.5);
+      }
+
+      function currentTask() {
+        return queue[taskIndex];
+      }
+
+      function normalize(items) {
+        return items.join("");
+      }
+
+      function updateScore() {
+        currentNumber.textContent = Math.min(taskIndex + 1, queue.length);
+        totalNumber.textContent = queue.length;
+        correctCountEl.textContent = correctCount;
+        wrongCountEl.textContent = wrongCount;
+        tryCountEl.textContent = mistakesThisTask + 1;
+      }
+
+      function updateCheckButton() {
+        if (locked) return;
+        const task = currentTask();
+        const isComplete = selected.length === task.mixedTiles.length;
+        checkButton.disabled = !isComplete;
+        checkButton.textContent = isComplete ? "Готово" : "Собери все плитки";
+      }
+
+      function setFeedback(kind, title, text, answer = "") {
+        feedback.className = `feedback ${kind}`;
+        feedbackTitle.className = `feedback-title ${kind}`;
+        feedbackTitle.textContent = title;
+        feedbackText.textContent = text;
+        if (answer) {
+          answerLine.textContent = answer;
+          answerLine.classList.remove("hidden");
+        } else {
+          answerLine.textContent = "";
+          answerLine.classList.add("hidden");
+        }
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function uniqueTiles(task) {
+        return [...new Set(task.tiles)];
+      }
+
+      function vocabHint(task) {
+        const lines = uniqueTiles(task).map((tile) => `${tile} — ${vocab[tile] || "слово из задания"}`);
+        return `Словарик плиток:<br>${lines.map(escapeHtml).join("<br>")}`;
+      }
+
+      function hintForMistake(task, mistakeNumber) {
+        if (mistakeNumber === 1) {
+          return `Перевод: ${task.ru}`;
+        }
+        if (mistakeNumber === 2) {
+          return task.hints[1];
+        }
+        if (mistakeNumber === 3) {
+          return task.hints[0].replace("Подсказка-перевод:", "Порядок слов:");
+        }
+        return vocabHint(task);
+      }
+
+      function renderHints() {
+        feedbackText.innerHTML = shownHints
+          .map((hint, index) => `<div class="hint-item"><strong>Подсказка ${index + 1}.</strong> ${hint}</div>`)
+          .join("");
+      }
+
+      function renderTemporaryHint(text) {
+        const savedHints = shownHints
+          .map((hint, index) => `<div class="hint-item"><strong>Подсказка ${index + 1}.</strong> ${hint}</div>`)
+          .join("");
+        feedbackText.innerHTML = `<div class="hint-item"><strong>Важно.</strong> ${escapeHtml(text)}</div>${savedHints}`;
+      }
+
+      function moveSelected(fromIndex, toIndex) {
+        if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+        const [item] = selected.splice(fromIndex, 1);
+        selected.splice(toIndex, 0, item);
+        renderTiles();
+      }
+
+      function makeTile(text, index, selectedTile) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = selectedTile ? "tile selected" : "tile";
+        button.textContent = text;
+        button.dataset.index = index;
+        if (selectedTile) {
+          button.draggable = true;
+          button.addEventListener("dragstart", (event) => {
+            draggedSelectedIndex = index;
+            button.classList.add("dragging");
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(index));
+          });
+          button.addEventListener("dragend", () => {
+            draggedSelectedIndex = null;
+            button.classList.remove("dragging");
+          });
+          button.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+          });
+          button.addEventListener("drop", (event) => {
+            event.preventDefault();
+            const fromIndex = draggedSelectedIndex ?? Number(event.dataTransfer.getData("text/plain"));
+            moveSelected(fromIndex, index);
+          });
+        }
+        button.addEventListener("click", () => {
+          if (locked) return;
+          if (selectedTile) {
+            removeSelected(index);
+          } else {
+            addSelected(index);
+          }
+        });
+        return button;
+      }
+
+      function renderTiles() {
+        const task = currentTask();
+        answerZone.innerHTML = '<p class="zone-title">Твой ответ:</p>';
+        tileZone.innerHTML = '<p class="zone-title">Плитки:</p>';
+
+        selected.forEach((item, index) => {
+          answerZone.appendChild(makeTile(item.text, index, true));
+        });
+
+        task.mixedTiles.forEach((text, index) => {
+          if (!selected.some((item) => item.sourceIndex === index)) {
+            tileZone.appendChild(makeTile(text, index, false));
+          }
+        });
+        updateCheckButton();
+      }
+
+      function addSelected(sourceIndex) {
+        const task = currentTask();
+        selected.push({ text: task.mixedTiles[sourceIndex], sourceIndex });
+        renderTiles();
+      }
+
+      function removeSelected(selectedIndex) {
+        selected.splice(selectedIndex, 1);
+        renderTiles();
+      }
+
+      function clearAnswer() {
+        if (locked) return;
+        selected = [];
+        renderTiles();
+      }
+
+      function renderTask() {
+        const task = currentTask();
+        selected = [];
+        mistakesThisTask = 0;
+        locked = false;
+        shownHints = [];
+        translationEl.textContent = task.prompt;
+        checkButton.classList.remove("hidden");
+        clearButton.classList.remove("hidden");
+        nextButton.classList.add("hidden");
+        restartButton.classList.add("hidden");
+        clearButton.disabled = false;
+        setFeedback("", "Собери предложение из плиток.", "Если ошибёшься, подсказки будут появляться постепенно.");
+        renderTiles();
+        updateScore();
+      }
+
+      function checkAnswer() {
+        if (locked) return;
+        const task = currentTask();
+        if (selected.length !== task.mixedTiles.length) return;
+
+        const selectedSnapshot = selected.map((item) => ({ ...item }));
+        const chosen = selectedSnapshot.map((item) => item.text);
+        if (normalize(chosen) === normalize(task.answer)) {
+          locked = true;
+          correctCount += 1;
+          updateScore();
+          setFeedback(
+            "correct",
+            "✅ 对！",
+            `${task.pinyin} — ${task.translation}`,
+            task.sentence
+          );
+          checkButton.classList.add("hidden");
+          clearButton.classList.add("hidden");
+          nextButton.classList.remove("hidden");
+          renderTiles();
+          return;
+        }
+
+        selected = selectedSnapshot;
+        mistakesThisTask += 1;
+        wrongCount += 1;
+        updateScore();
+        const nextHint = hintForMistake(task, mistakesThisTask);
+        const alreadyShownVocab = shownHints.some((hint) => hint.startsWith("Словарик плиток:"));
+        if (mistakesThisTask < 4 || !alreadyShownVocab) {
+          shownHints.unshift(nextHint);
+        }
+        feedback.className = "feedback wrong";
+        feedbackTitle.className = "feedback-title wrong";
+        feedbackTitle.textContent = "❌ 错。";
+        answerLine.textContent = "";
+        answerLine.classList.add("hidden");
+        renderHints();
+        renderTiles();
+      }
+
+      function goNext() {
+        taskIndex += 1;
+        if (taskIndex >= queue.length) {
+          finishExercise();
+        } else {
+          renderTask();
+        }
+      }
+
+      function finishExercise() {
+        locked = true;
+        translationEl.textContent = "练习完成！";
+        answerZone.innerHTML = '<p class="zone-title">Результат:</p>';
+        tileZone.innerHTML = "";
+        checkButton.classList.add("hidden");
+        clearButton.classList.add("hidden");
+        nextButton.classList.add("hidden");
+        restartButton.classList.remove("hidden");
+        setFeedback(
+          "correct",
+          "Готово!",
+          "Можно пройти упражнение ещё раз: порядок заданий и плиток поменяется.",
+          `Правильно: ${correctCount}. Ошибки: ${wrongCount}.`
+        );
+      }
+
+      function startExercise() {
+        queue = shuffle(tasks).map((task) => ({
+          ...task,
+          mixedTiles: shuffle(task.tiles),
+        }));
+        taskIndex = 0;
+        correctCount = 0;
+        wrongCount = 0;
+        renderTask();
+      }
+
+      checkButton.addEventListener("click", checkAnswer);
+      clearButton.addEventListener("click", clearAnswer);
+      nextButton.addEventListener("click", goNext);
+      restartButton.addEventListener("click", startExercise);
+      startExercise();
+    </script>
+  </body>
+</html>
